@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chat AI — Trợ lý trò chuyện</title>
+  <title>BEYOND8 — Trợ lý học tập</title>
 
   <meta name="description" content="Giao diện chat AI: hỏi đáp nhanh, hỗ trợ tiếng Việt, tích hợp Botpress Webchat. Trải nghiệm trò chuyện trực tiếp trên trình duyệt." />
   <meta name="keywords" content="chatbot, AI, trợ lý ảo, Botpress, webchat, hỏi đáp, tiếng Việt" />
   <meta name="author" content="Bot AI" />
   <meta name="robots" content="index, follow" />
-  <meta name="theme-color" content="#1e3a8a" />
+  <meta name="theme-color" content="#eba031" />
 
   <link rel="icon" type="image/png" href="/assets/favicon.png" sizes="32x32" />
   <link rel="icon" type="image/png" href="/assets/favicon.png" sizes="192x192" />
@@ -54,7 +54,7 @@
       width: 100vw;
       height: 100vh;
       overflow: hidden;
-      background: #f5f7fb;
+      background: #ffffff;
     }
 
     .chat-wrapper {
@@ -67,7 +67,7 @@
 
     .chat-header {
       height: 70px;
-      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      background: linear-gradient(135deg, #c98a1f, #eba031);
       color: white;
       display: flex;
       align-items: center;
@@ -128,6 +128,125 @@
       width: 100%;
       height: 100%;
       border: none;
+      opacity: 0;
+      transition: opacity 0.55s ease;
+    }
+
+    iframe.is-visible {
+      opacity: 1;
+    }
+
+    /* --- Splash: 2 nửa chéo răng cưa + chuỗi animation --- */
+    .splash {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      overflow: hidden;
+      background: #ffffff;
+      transition: opacity 0.55s ease;
+    }
+
+    .splash.splash--out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .splash__bed {
+      position: absolute;
+      inset: 0;
+      background: #ffffff;
+      z-index: 0;
+    }
+
+    .splash-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      will-change: transform;
+      transition: transform 0.95s cubic-bezier(0.52, 0.02, 0.12, 1);
+    }
+
+    /* Cùng một gradient: khi răng cưa dẹt về đường chéo, màu khớp liền — không đổi sang “bg khác” */
+    .splash-panel--sw,
+    .splash-panel--ne {
+      background: linear-gradient(135deg, #fffbeb 0%, #fde68a 22%, #fbbf24 46%, #eba031 60%, #d97706 82%, #9a3412 100%);
+    }
+
+    /* Hai nửa tách ra: chệch theo đường chéo */
+    .splash--apart .splash-panel--sw {
+      transform: translate(-18vw, 16vh) rotate(-3deg);
+    }
+
+    .splash--apart .splash-panel--ne {
+      transform: translate(18vw, -16vh) rotate(3deg);
+    }
+
+    .splash--closed .splash-panel--sw,
+    .splash--closed .splash-panel--ne {
+      transform: translate(0, 0) rotate(0deg);
+    }
+
+    .splash__text {
+      position: fixed;
+      inset: 0;
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1.5rem;
+      text-transform: uppercase;
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0.88) translateY(12px);
+      transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .splash--text-in .splash__text {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    .splash--text-out .splash__text {
+      opacity: 0;
+      transform: scale(1.06) translateY(-8px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .splash__brand {
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: clamp(3.75rem, 15vw, 7rem);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      line-height: 1.05;
+      text-transform: uppercase;
+      background: linear-gradient(105deg, #78350f 0%, #b45309 18%, #d97706 40%, #eba031 55%, #f59e0b 78%, #92400e 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 1.1rem;
+    }
+
+    .splash--text-in .splash__brand {
+      animation: splash-shine 2.8s ease-in-out infinite;
+    }
+
+    @keyframes splash-shine {
+      0%, 100% { background-position: 0% center; }
+      50% { background-position: 100% center; }
+    }
+
+    .splash__tagline {
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: clamp(1.35rem, 5.5vw, 2.15rem);
+      font-weight: 900;
+      color: #1c1917;
+      line-height: 1.35;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      max-width: 20em;
     }
 
     @media (max-width: 768px) {
@@ -146,14 +265,202 @@
   </style>
 </head>
 <body>
-  <div class="chat-wrapper">
+  <div id="splash" class="splash splash--apart" role="status" aria-label="Đang tải" aria-busy="true">
+    <div class="splash__bed" aria-hidden="true"></div>
+    <div id="splash-panel-sw" class="splash-panel splash-panel--sw" aria-hidden="true"></div>
+    <div id="splash-panel-ne" class="splash-panel splash-panel--ne" aria-hidden="true"></div>
+    <div class="splash__text">
+      <p class="splash__brand">BEYOND8</p>
+      <p class="splash__tagline">TRỢ LÝ HỌC TẬP CHẤT LƯƠNG CAO</p>
+    </div>
+  </div>
 
+  <div class="chat-wrapper">
     <div class="chat-container">
       <iframe
-        src="https://cdn.botpress.cloud/webchat/v3.6/shareable.html?configUrl=https://files.bpcontent.cloud/2026/04/23/15/20260423151813-RGBQISNB.json"
+        id="webchat-frame"
+        src="https://cdn.botpress.cloud/webchat/v3.6/shareable.html?configUrl=https://files.bpcontent.cloud/2026/04/23/16/20260423164418-33GV20TJ.json"
         allow="microphone"
+        title="BEYOND8 — Chat"
       ></iframe>
     </div>
   </div>
+
+  <script>
+    ;(function () {
+      var splash = document.getElementById('splash')
+      var frame = document.getElementById('webchat-frame')
+      var panelSw = document.getElementById('splash-panel-sw')
+      var panelNe = document.getElementById('splash-panel-ne')
+      if (!splash || !frame || !panelSw || !panelNe) return
+
+      /**
+       * Một polyline răng cưa dọc đường chéo (100,100) → (0,0).
+       * Hai nửa dùng CÙNG các đỉnh seam → khép kín, không còn khe đen giữa hai clip.
+       */
+      var TEETH = 36
+      var AMP_FULL = 2.05
+      var currentAmp = AMP_FULL
+
+      function seamZigzagPoints(n, amp) {
+        var pts = []
+        var i
+        for (i = 0; i <= n; i++) {
+          var t = i / n
+          var bx = (1 - t) * 100
+          var by = (1 - t) * 100
+          var sgn = i % 2 === 0 ? 1 : -1
+          var nx = -0.70710678 * sgn * amp
+          var ny = 0.70710678 * sgn * amp
+          pts.push((bx + nx).toFixed(3) + '% ' + (by + ny).toFixed(3) + '%')
+        }
+        return pts
+      }
+
+      function setClipsForAmp(amp) {
+        currentAmp = amp
+        var P = seamZigzagPoints(TEETH, amp)
+        var forward = P.join(', ')
+        panelSw.style.clipPath =
+          'polygon(0% 100%, 100% 100%, ' + forward + ', 0% 0%)'
+        panelNe.style.clipPath =
+          'polygon(0% 0%, 100% 0%, 100% 100%, ' + forward + ')'
+      }
+
+      function applyClips() {
+        setClipsForAmp(currentAmp)
+      }
+
+      applyClips()
+      window.addEventListener('resize', function () {
+        applyClips()
+      })
+
+      /** Nội suy biên độ răng cưa: amp cao → 0 = mép dẹt liền (cùng clip-path, không đổi layer bg) */
+      function animateAmp(from, to, ms) {
+        return new Promise(function (resolve) {
+          var t0 = performance.now()
+          function tick(now) {
+            var u = Math.min(1, (now - t0) / ms)
+            var eased = 1 - Math.pow(1 - u, 2.6)
+            var amp = from + (to - from) * eased
+            setClipsForAmp(amp)
+            if (u < 1) {
+              requestAnimationFrame(tick)
+            } else {
+              setClipsForAmp(to)
+              resolve()
+            }
+          }
+          requestAnimationFrame(tick)
+        })
+      }
+
+      var PANEL_MS = 980
+      var TEXT_HOLD_MS = 2000
+      var TEXT_OUT_MS = 480
+      var maxWaitMs = 14000
+      var started = performance.now()
+      var iframeReady = false
+      var sequenceDone = false
+      var dismissed = false
+
+      function dismissSplash() {
+        if (dismissed) return
+        dismissed = true
+        splash.setAttribute('aria-busy', 'false')
+        splash.classList.add('splash--out')
+        window.setTimeout(function () {
+          splash.setAttribute('hidden', '')
+          splash.style.display = 'none'
+          frame.classList.add('is-visible')
+        }, 560)
+      }
+
+      function tryDismiss() {
+        if (!iframeReady || !sequenceDone || dismissed) return
+        var elapsed = performance.now() - started
+        var minTotal = 6200
+        var wait = Math.max(0, minTotal - elapsed)
+        window.setTimeout(dismissSplash, wait)
+      }
+
+      frame.addEventListener(
+        'load',
+        function () {
+          iframeReady = true
+          tryDismiss()
+        },
+        { once: true }
+      )
+      window.setTimeout(function () {
+        iframeReady = true
+        tryDismiss()
+      }, maxWaitMs)
+
+      function wait(ms) {
+        return new Promise(function (resolve) {
+          window.setTimeout(resolve, ms)
+        })
+      }
+
+      function waitTransition(el) {
+        return new Promise(function (resolve) {
+          var done = false
+          function end() {
+            if (done) return
+            done = true
+            el.removeEventListener('transitionend', onEnd)
+            resolve()
+          }
+          function onEnd(e) {
+            if (e.propertyName === 'transform') end()
+          }
+          el.addEventListener('transitionend', onEnd)
+          window.setTimeout(end, PANEL_MS + 120)
+        })
+      }
+
+      function runSequence() {
+        return wait(120)
+          .then(function () {
+            splash.classList.remove('splash--apart')
+            splash.classList.add('splash--closed')
+            return Promise.all([waitTransition(panelSw), waitTransition(panelNe)])
+          })
+          .then(function () {
+            return animateAmp(AMP_FULL, 0, 720)
+          })
+          .then(function () {
+            splash.classList.add('splash--text-in')
+            return wait(TEXT_HOLD_MS)
+          })
+          .then(function () {
+            splash.classList.remove('splash--text-in')
+            splash.classList.add('splash--text-out')
+            return wait(TEXT_OUT_MS)
+          })
+          .then(function () {
+            splash.classList.remove('splash--text-out')
+            return animateAmp(0, AMP_FULL, 640)
+          })
+          .then(function () {
+            splash.classList.remove('splash--closed')
+            splash.classList.add('splash--apart')
+            return Promise.all([waitTransition(panelSw), waitTransition(panelNe)])
+          })
+          .then(function () {
+            sequenceDone = true
+            tryDismiss()
+          })
+      }
+
+      runSequence().catch(function (e) {
+        console.error(e)
+        sequenceDone = true
+        tryDismiss()
+      })
+    })()
+  </script>
 </body>
 </html>
